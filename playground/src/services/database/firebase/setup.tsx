@@ -1,6 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import type { DocumentData } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc, DocumentSnapshot } from "firebase/firestore";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -18,4 +19,31 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
+// Initialize Firestore
+const db = getFirestore(app);
+
+// Function to get data from Firestore by collection name and document ID
+async function getData(collectionName: string, docId: string): Promise<DocumentData | undefined> {
+    const docRef = doc(db, collectionName, docId);  // Reference to the document
+    const docSnap: DocumentSnapshot<DocumentData> = await getDoc(docRef);  // Get the document snapshot
+
+    if (docSnap.exists()) {
+        return docSnap.data()
+    } else {
+        console.log("No such document!");  // If document doesn't exist
+    }
+}
+
+async function setData(collectionName: string, docId: string, data: any): Promise<void> {
+    const docRef = doc(db, collectionName, docId);  // Reference to the document
+
+    try {
+        await setDoc(docRef, data);
+        console.log(`Document ${docId} in '${collectionName}' successfully written!`);
+    } catch (error) {
+        console.error("Error writing document:", error);
+    }
+}
+
+export default { getData, setData };
